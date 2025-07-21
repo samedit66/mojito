@@ -1,5 +1,7 @@
 import dataclasses
+import enum
 import typing
+
 import re
 
 
@@ -179,3 +181,70 @@ class RegexTokenizer:
         for token in tokenize(s, self.__rules):
             if token.kind is not None:
                 yield token
+
+
+@enum.unique
+class MohitoTokenKind(enum.Enum):
+    LEFT_SQUARE_BRACKET = enum.auto()
+    RIGHT_SQUARE_BRACKET = enum.auto()
+    LEFT_CURLY_BRACKET = enum.auto()
+    RIGHT_CURLY_BRACKET = enum.auto()
+    ARROW = enum.auto()
+    COMMA = enum.auto()
+    INTEGER_NUMBER = enum.auto()
+    FLOAT_NUMBER = enum.auto()
+    STRING = enum.auto()
+    WORD = enum.auto()
+
+    # Malformed integer (e.g., '123a')
+    INVALID_INTEGER_NUMBER = enum.auto()
+    # Malformed float (e.g., '3.14.5', '12.a')
+    INVALID_FLOAT_NUMBER = enum.auto()
+    # Unterminated or malformed string (e.g., '"abc')
+    INVALID_STRING = enum.auto()
+
+
+def mohito_tokenizer() -> RegexTokenizer:
+    """
+    Constructs a RegexTokenizer configured for the Mohito language.
+
+    The tokenizer will recognize:
+      - Square and curly brackets, arrows, and commas.
+      - Valid integers and floats.
+      - Valid double-quoted strings with escape support.
+      - Identifiers (words).
+      - Invalid tokens: malformed integers, floats, and unterminated strings.
+
+    Returns:
+        A RegexTokenizer instance with all Mohito token rules added.
+    """
+    return (
+        RegexTokenizer()
+
+        # Whitespace to ignore
+        .ignore(r"\s+")
+
+        # Invalid variants (checked after valid patterns):
+        # INVALID_FLOAT_NUMBER: numbers with extra letters or multiple dots (e.g., '3.14.5', '12.a')
+        .add_token(r"(\d+\.)+[^\d\s\[\]\{\}]+", MohitoTokenKind.INVALID_FLOAT_NUMBER)
+        # INVALID_INTEGER_NUMBER: digits followed by letters (e.g., '123a')
+        .add_token(r"\d+[^\d\s\[\]\{\}\.\"]+", MohitoTokenKind.INVALID_INTEGER_NUMBER)
+        # INVALID_STRING: a string start without closing quote (e.g., '"abc')
+        .add_token(r'"(?:[^"\\]|\\.)*$', MohitoTokenKind.INVALID_STRING)
+
+        # Delimiters and punctuation
+        .add_token(r"\[", MohitoTokenKind.LEFT_SQUARE_BRACKET)
+        .add_token(r"\]", MohitoTokenKind.RIGHT_SQUARE_BRACKET)
+        .add_token(r"\{", MohitoTokenKind.LEFT_CURLY_BRACKET)
+        .add_token(r"\}", MohitoTokenKind.RIGHT_CURLY_BRACKET)
+        .add_token(r"->", MohitoTokenKind.ARROW)
+        .add_token(r",", MohitoTokenKind.COMMA)
+        # Valid number literals
+        .add_token(r"[\d]*\.\d+", MohitoTokenKind.FLOAT_NUMBER)
+        .add_token(r"\d+", MohitoTokenKind.INTEGER_NUMBER)
+        # Valid strings: double quotes with escapes
+        .add_token(r'"(?:[^"\\]|\\.)*"', MohitoTokenKind.STRING)
+        # Identifiers / words: allow letters, digits, underscores,
+        # and trailing punctuation like !, ?, or apostrophe
+        .add_token(r"[^\s\[\]\{\}\"]+", MohitoTokenKind.WORD)
+    )

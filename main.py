@@ -2,9 +2,9 @@ from mohito import tokenizer
 
 
 def main():
-    s = '123'
-    rules = []
-    print(list(tokenizer.tokenize(s, rules)))
+    s = 'def inc { + 1 }'
+    mt = tokenizer.mohito_tokenizer()
+    print(list(mt(s)))
 
 
 if __name__ == "__main__":
