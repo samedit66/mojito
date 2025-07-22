@@ -231,6 +231,7 @@ def tokenize(source, line_number: int = 1):
     Args:
         source: The string to tokenize or callable to generate a sequence of lines.
         The callable must return an empty value (`""` or `None`) to stop tokenizing.
+        When source is a string, it gets splitted by line boundaries (see `str.splitlines()`).
 
     Yields:
         Tokens defined by mohito language.
@@ -238,7 +239,7 @@ def tokenize(source, line_number: int = 1):
     tokenizer = mohito_tokenizer()
 
     if isinstance(source, str):
-        lines = iter([source, ""])
+        lines = iter(source.splitlines() + [""])
         def source():
             return next(lines)
 

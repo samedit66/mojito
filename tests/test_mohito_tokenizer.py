@@ -112,3 +112,18 @@ def test_multiline_text_with_line_numbers():
     ]
 
     assert list(t.tokenize(source, line_number=1)) == expected
+
+
+def test_multiline_text_is_string():
+    source = ": two 1\n1 +\n;"
+
+    expected = [
+        (1, t.Token(t.MohitoTokenKind.WORD, ":", 0, 0)),
+        (1, t.Token(t.MohitoTokenKind.WORD, "two", 2, 4)),
+        (1, t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "1", 6, 6)),
+        (2, t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "1", 0, 0)),
+        (2, t.Token(t.MohitoTokenKind.WORD, "+", 2, 2)),
+        (3, t.Token(t.MohitoTokenKind.WORD, ";", 0, 0)),
+    ]
+
+    assert list(t.tokenize(source, line_number=1)) == expected
