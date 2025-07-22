@@ -94,23 +94,21 @@ def test_comment(tokenizer):
     assert list(tokenizer(s)) == expected
 
 
-def test_multiline_text():
-    lines = iter([": sum", "0 [+] reduce", ";"])
-    def source():
-        return next(lines, "")
-    
+def source_helper(lines):
+    lines = iter(lines)
+    return lambda: next(lines, "")
+
+
+def test_multiline_text_with_line_numbers():
+    source = source_helper([": two 1", "1 +", ";"])
+
     expected = [
-        # line 1: ": sum"
-        t.Token(t.MohitoTokenKind.WORD, ":",0, 0),
-        t.Token(t.MohitoTokenKind.WORD, "sum",  2, 4),
-        # line 2: "0 [+] reduce"
-        t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "0", 0, 0),
-        t.Token(t.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 2, 2),
-        t.Token(t.MohitoTokenKind.WORD, "+", 3, 3),
-        t.Token(t.MohitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 4, 4),
-        t.Token(t.MohitoTokenKind.WORD, "reduce", 6, 11),
-        # line 3: ";"
-        t.Token(t.MohitoTokenKind.WORD, ";", 0, 0),
+        (1, t.Token(t.MohitoTokenKind.WORD, ":", 0, 0)),
+        (1, t.Token(t.MohitoTokenKind.WORD, "two", 2, 4)),
+        (1, t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "1", 6, 6)),
+        (2, t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "1", 0, 0)),
+        (2, t.Token(t.MohitoTokenKind.WORD, "+", 2, 2)),
+        (3, t.Token(t.MohitoTokenKind.WORD, ";", 0, 0)),
     ]
 
-    assert list(t.tokenize(source)) == expected
+    assert list(t.tokenize(source, line_number=1)) == expected

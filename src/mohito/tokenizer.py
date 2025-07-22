@@ -2,6 +2,7 @@ from __future__ import annotations
 import dataclasses
 import enum
 import typing
+import itertools as it
 
 import re
 
@@ -222,7 +223,7 @@ def mohito_tokenizer() -> RegexTokenizer:
     )
 
 
-def tokenize(source) -> typing.Iterator[Token]:
+def tokenize(source, line_number: int = 1):
     """
     Tokenizes the input using mohito tokenizer.
     Input can be either a string or a function which returns a line by each call.
@@ -236,7 +237,12 @@ def tokenize(source) -> typing.Iterator[Token]:
     tokenizer = mohito_tokenizer()
 
     if isinstance(source, str):
-        yield from tokenizer(source)
+        lines = iter([source, ""])
+        def source():
+            return next(lines)
 
+    i = line_number
     while (line := source()):
-        yield from tokenizer(line)
+        yield from zip(it.repeat(i), tokenizer(line))
+        i += 1
+    
