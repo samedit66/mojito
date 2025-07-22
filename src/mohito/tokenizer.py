@@ -187,20 +187,10 @@ class RegexTokenizer:
 class MohitoTokenKind(enum.Enum):
     LEFT_SQUARE_BRACKET = enum.auto()
     RIGHT_SQUARE_BRACKET = enum.auto()
-    LEFT_CURLY_BRACKET = enum.auto()
-    RIGHT_CURLY_BRACKET = enum.auto()
-    ARROW = enum.auto()
-    COMMA = enum.auto()
     INTEGER_NUMBER = enum.auto()
     FLOAT_NUMBER = enum.auto()
     STRING = enum.auto()
     WORD = enum.auto()
-
-    # Malformed integer (e.g., '123a')
-    INVALID_INTEGER_NUMBER = enum.auto()
-    # Malformed float (e.g., '3.14.5', '12.a')
-    INVALID_FLOAT_NUMBER = enum.auto()
-    # Unterminated or malformed string (e.g., '"abc')
     INVALID_STRING = enum.auto()
 
 
@@ -223,28 +213,22 @@ def mohito_tokenizer() -> RegexTokenizer:
 
         # Whitespace to ignore
         .ignore(r"\s+")
+        .ignore(r"//.*\n?")
 
-        # Invalid variants (checked after valid patterns):
-        # INVALID_FLOAT_NUMBER: numbers with extra letters or multiple dots (e.g., '3.14.5', '12.a')
-        .add_token(r"(\d+\.)+[^\d\s\[\]\{\}]+", MohitoTokenKind.INVALID_FLOAT_NUMBER)
-        # INVALID_INTEGER_NUMBER: digits followed by letters (e.g., '123a')
-        .add_token(r"\d+[^\d\s\[\]\{\}\.\"]+", MohitoTokenKind.INVALID_INTEGER_NUMBER)
-        # INVALID_STRING: a string start without closing quote (e.g., '"abc')
-        .add_token(r'"(?:[^"\\]|\\.)*$', MohitoTokenKind.INVALID_STRING)
+        # Valid string
+        .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', MohitoTokenKind.STRING)
 
-        # Delimiters and punctuation
+        # Invalid string
+        .add_token(r'".*$', MohitoTokenKind.INVALID_STRING)
+
+        # Quotes
         .add_token(r"\[", MohitoTokenKind.LEFT_SQUARE_BRACKET)
         .add_token(r"\]", MohitoTokenKind.RIGHT_SQUARE_BRACKET)
-        .add_token(r"\{", MohitoTokenKind.LEFT_CURLY_BRACKET)
-        .add_token(r"\}", MohitoTokenKind.RIGHT_CURLY_BRACKET)
-        .add_token(r"->", MohitoTokenKind.ARROW)
-        .add_token(r",", MohitoTokenKind.COMMA)
-        # Valid number literals
-        .add_token(r"[\d]*\.\d+", MohitoTokenKind.FLOAT_NUMBER)
-        .add_token(r"\d+", MohitoTokenKind.INTEGER_NUMBER)
-        # Valid strings: double quotes with escapes
-        .add_token(r'"(?:[^"\\]|\\.)*"', MohitoTokenKind.STRING)
-        # Identifiers / words: allow letters, digits, underscores,
-        # and trailing punctuation like !, ?, or apostrophe
-        .add_token(r"[^\s\[\]\{\}\"]+", MohitoTokenKind.WORD)
+
+        # Numbers
+        .add_token(r"[\-+]?\d*\.\d+", MohitoTokenKind.FLOAT_NUMBER)
+        .add_token(r"[\-+]?\d+", MohitoTokenKind.INTEGER_NUMBER)
+
+        # Any other non-space identifier is a word
+        .add_token(r"[^\s\[\]\"]+", MohitoTokenKind.WORD)
     )
