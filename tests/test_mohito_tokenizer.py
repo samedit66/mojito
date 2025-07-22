@@ -83,3 +83,12 @@ def test_mixed_sequence(tokenizer):
     ]
 
     assert list(tokenizer(s)) == expected
+
+
+def test_comment(tokenizer):
+    s = "print // this is a comment, not a word sequence"
+    expected = [
+        t.Token(t.MohitoTokenKind.WORD, "print", 0, 4),
+    ]
+
+    assert list(tokenizer(s)) == expected
