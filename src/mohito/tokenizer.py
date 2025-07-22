@@ -226,10 +226,11 @@ def mohito_tokenizer() -> RegexTokenizer:
 def tokenize(source, line_number: int = 1):
     """
     Tokenizes the input using mohito tokenizer.
-    Input can be either a string or a function which returns a line by each call.
+    Input can be either a string or a callable which returns a line by each call.
 
     Args:
-        source: The string to tokenize or function to generate a sequence of lines.
+        source: The string to tokenize or callable to generate a sequence of lines.
+        The callable must return an empty value (`""` or `None`) to stop tokenizing.
 
     Yields:
         Tokens defined by mohito language.
