@@ -1,10 +1,10 @@
 from __future__ import annotations
 import dataclasses
-import enum
 import typing
 import itertools as it
-
 import re
+
+from mohito import types
 
 
 @dataclasses.dataclass(frozen=True)
@@ -188,17 +188,6 @@ class RegexTokenizer:
                 yield token
 
 
-@enum.unique
-class MohitoTokenKind(enum.Enum):
-    LEFT_SQUARE_BRACKET = enum.auto()
-    RIGHT_SQUARE_BRACKET = enum.auto()
-    INTEGER_NUMBER = enum.auto()
-    FLOAT_NUMBER = enum.auto()
-    STRING = enum.auto()
-    WORD = enum.auto()
-    INVALID_STRING = enum.auto()
-
-
 def mohito_tokenizer() -> RegexTokenizer:
     return (
         RegexTokenizer()
@@ -206,17 +195,17 @@ def mohito_tokenizer() -> RegexTokenizer:
         .ignore(r"\s+")
         .ignore(r"//.*\n?")
         # Valid string
-        .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', MohitoTokenKind.STRING)
+        .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', types.MohitoTokenKind.STRING)
         # Invalid string
-        .add_token(r'".*\n?$', MohitoTokenKind.INVALID_STRING)
+        .add_token(r'".*\n?$', types.MohitoTokenKind.INVALID_STRING)
         # Quotes
-        .add_token(r"\[", MohitoTokenKind.LEFT_SQUARE_BRACKET)
-        .add_token(r"\]", MohitoTokenKind.RIGHT_SQUARE_BRACKET)
+        .add_token(r"\[", types.MohitoTokenKind.LEFT_SQUARE_BRACKET)
+        .add_token(r"\]", types.MohitoTokenKind.RIGHT_SQUARE_BRACKET)
         # Numbers
-        .add_token(r"[\-+]?\d*\.\d+", MohitoTokenKind.FLOAT_NUMBER)
-        .add_token(r"[\-+]?\d+", MohitoTokenKind.INTEGER_NUMBER)
+        .add_token(r"[\-+]?\d*\.\d+", types.MohitoTokenKind.FLOAT_NUMBER)
+        .add_token(r"[\-+]?\d+", types.MohitoTokenKind.INTEGER_NUMBER)
         # Any other non-space identifier is a word
-        .add_token(r"[^\s\[\]\"]+", MohitoTokenKind.WORD)
+        .add_token(r"[^\s\[\]\"]+", types.MohitoTokenKind.WORD)
     )
 
 
