@@ -1,3 +1,4 @@
+from __future__ import annotations
 import dataclasses
 import enum
 import typing
@@ -70,7 +71,7 @@ class NoMatchingRuleFoundError(Exception):
     pass
 
 
-def tokenize(
+def simple_tokenize(
     s: str,
     rules: typing.Iterable[TokenRule],
 ) -> typing.Iterator[Token]:
@@ -133,7 +134,7 @@ class RegexTokenizer:
         self,
         regex_rule: str,
         kind: typing.Any,
-    ) -> 'RegexTokenizer':
+    ) -> RegexTokenizer:
         """
         Adds a token rule to the tokenizer.
 
@@ -150,7 +151,7 @@ class RegexTokenizer:
     def ignore(
         self,
         regex_rule: str,
-    ) -> 'RegexTokenizer':
+    ) -> RegexTokenizer:
         """
         Adds a rule to skip over certain patterns without producing tokens.
 
@@ -178,7 +179,7 @@ class RegexTokenizer:
         Raises:
             NoMatchingRuleFoundError: If a segment of text cannot be matched by any rule.
         """
-        for token in tokenize(s, self.__rules):
+        for token in simple_tokenize(s, self.__rules):
             if token.kind is not None:
                 yield token
 
@@ -195,19 +196,6 @@ class MohitoTokenKind(enum.Enum):
 
 
 def mohito_tokenizer() -> RegexTokenizer:
-    """
-    Constructs a RegexTokenizer configured for the Mohito language.
-
-    The tokenizer will recognize:
-      - Square and curly brackets, arrows, and commas.
-      - Valid integers and floats.
-      - Valid double-quoted strings with escape support.
-      - Identifiers (words).
-      - Invalid tokens: malformed integers, floats, and unterminated strings.
-
-    Returns:
-        A RegexTokenizer instance with all Mohito token rules added.
-    """
     return (
         RegexTokenizer()
 
@@ -232,3 +220,23 @@ def mohito_tokenizer() -> RegexTokenizer:
         # Any other non-space identifier is a word
         .add_token(r"[^\s\[\]\"]+", MohitoTokenKind.WORD)
     )
+
+
+def tokenize(source) -> typing.Iterator[Token]:
+    """
+    Tokenizes the input using mohito tokenizer.
+    Input can be either a string or a function which returns a line by each call.
+
+    Args:
+        source: The string to tokenize or function to generate a sequence of lines.
+
+    Yields:
+        Tokens defined by mohito language.
+    """
+    tokenizer = mohito_tokenizer()
+
+    if isinstance(source, str):
+        yield from tokenizer(source)
+
+    while (line := source()):
+        yield from tokenizer(line)
