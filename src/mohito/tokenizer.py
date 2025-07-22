@@ -219,7 +219,7 @@ def mohito_tokenizer() -> RegexTokenizer:
         .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', MohitoTokenKind.STRING)
 
         # Invalid string
-        .add_token(r'".*$', MohitoTokenKind.INVALID_STRING)
+        .add_token(r'".*\n?$', MohitoTokenKind.INVALID_STRING)
 
         # Quotes
         .add_token(r"\[", MohitoTokenKind.LEFT_SQUARE_BRACKET)
