@@ -4,9 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = [
-    "regex>=2024.11.6",
-]
+dependencies = []
 
 [dependency-groups]
 dev = [
