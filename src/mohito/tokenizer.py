@@ -225,16 +225,18 @@ def mohito_tokenizer() -> RegexTokenizer:
 
 def tokenize(source, line_number: int = 1):
     """
-    Tokenizes the input using mohito tokenizer.
-    Input can be either a string or a callable which returns a line by each call.
+    Tokenizes the input using the Mohito tokenizer.
 
+    The input can be either:
+    - A string, which will be split into lines using `str.splitlines()`.
+    - A callable that returns one line of text per call. Tokenization stops when the callable returns an empty string or `None`.
+    
     Args:
-        source: The string to tokenize or callable to generate a sequence of lines.
-        The callable must return an empty value (`""` or `None`) to stop tokenizing.
-        When source is a string, it gets splitted by line boundaries (see `str.splitlines()`).
-
+        source: A string to be tokenized or a callable returning lines of text.
+        line_number: The initial line number to associate with the generated tokens.
+    
     Yields:
-        Tokens defined by mohito language.
+        Token objects as defined by the Mohito language specification.
     """
     tokenizer = mohito_tokenizer()
 
