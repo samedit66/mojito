@@ -30,8 +30,8 @@ def test_square_brackets(tokenizer):
         ('"hello\\"world"', t.MohitoTokenKind.STRING, '"hello\\"world"'),
         ("foo_bar", t.MohitoTokenKind.WORD, "foo_bar"),
         ("answer?", t.MohitoTokenKind.WORD, "answer?"),
-        ("a..b", t.MohitoTokenKind.WORD, "a..b")
-    ]
+        ("a..b", t.MohitoTokenKind.WORD, "a..b"),
+    ],
 )
 def test_valid_literals(input_str, kind, literal, tokenizer):
     tokens = list(tokenizer(input_str))
@@ -45,7 +45,7 @@ def test_valid_literals(input_str, kind, literal, tokenizer):
     [
         ('"unterminated', '"unterminated'),
         ('"bad\\', '"bad\\'),
-    ]
+    ],
 )
 def test_invalid_string(input_str, literal, tokenizer):
     tokens = list(tokenizer(input_str))
@@ -59,27 +59,13 @@ def test_invalid_string(input_str, literal, tokenizer):
 def test_mixed_sequence(tokenizer):
     s = "[ foo 123 4.56 bar!? 'baz']"
     expected = [
-        t.Token(
-            t.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 0, 0
-        ),
-        t.Token(
-            t.MohitoTokenKind.WORD, "foo", 2, 4
-        ),
-        t.Token(
-            t.MohitoTokenKind.INTEGER_NUMBER, "123", 6, 8
-        ),
-        t.Token(
-            t.MohitoTokenKind.FLOAT_NUMBER, "4.56", 10, 13
-        ),
-        t.Token(
-            t.MohitoTokenKind.WORD, "bar!?", 15, 19
-        ),
-        t.Token(
-            t.MohitoTokenKind.WORD, "'baz'", 21, 25
-        ),
-        t.Token(
-            t.MohitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 26, 26
-        ),
+        t.Token(t.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 0, 0),
+        t.Token(t.MohitoTokenKind.WORD, "foo", 2, 4),
+        t.Token(t.MohitoTokenKind.INTEGER_NUMBER, "123", 6, 8),
+        t.Token(t.MohitoTokenKind.FLOAT_NUMBER, "4.56", 10, 13),
+        t.Token(t.MohitoTokenKind.WORD, "bar!?", 15, 19),
+        t.Token(t.MohitoTokenKind.WORD, "'baz'", 21, 25),
+        t.Token(t.MohitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 26, 26),
     ]
 
     assert list(tokenizer(s)) == expected

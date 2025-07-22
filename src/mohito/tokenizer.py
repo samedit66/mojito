@@ -18,6 +18,7 @@ class Token:
         start: The start index of the token in the input string.
         end: The end index (inclusive) of the token in the input string.
     """
+
     kind: typing.Any
     value: str
     start: int
@@ -33,6 +34,7 @@ class TokenRule:
         regex_rule: The regular expression pattern to apply.
         kind: The type or category assigned to tokens matching this rule.
     """
+
     regex_rule: str
     kind: typing.Any
 
@@ -69,6 +71,7 @@ class NoMatchingRuleFoundError(Exception):
     """
     Raised when no token rule matches the input at the current position.
     """
+
     pass
 
 
@@ -103,7 +106,7 @@ def simple_tokenize(
                 break
 
         if not matched:
-            error_snippet = s[index:index + 3]
+            error_snippet = s[index : index + 3]
             msg = f"No rule matched at index {index}: '{error_snippet}'"
             raise NoMatchingRuleFoundError(msg)
 
@@ -199,25 +202,19 @@ class MohitoTokenKind(enum.Enum):
 def mohito_tokenizer() -> RegexTokenizer:
     return (
         RegexTokenizer()
-
         # Whitespace to ignore
         .ignore(r"\s+")
         .ignore(r"//.*\n?")
-
         # Valid string
         .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', MohitoTokenKind.STRING)
-
         # Invalid string
         .add_token(r'".*\n?$', MohitoTokenKind.INVALID_STRING)
-
         # Quotes
         .add_token(r"\[", MohitoTokenKind.LEFT_SQUARE_BRACKET)
         .add_token(r"\]", MohitoTokenKind.RIGHT_SQUARE_BRACKET)
-
         # Numbers
         .add_token(r"[\-+]?\d*\.\d+", MohitoTokenKind.FLOAT_NUMBER)
         .add_token(r"[\-+]?\d+", MohitoTokenKind.INTEGER_NUMBER)
-
         # Any other non-space identifier is a word
         .add_token(r"[^\s\[\]\"]+", MohitoTokenKind.WORD)
     )
@@ -230,11 +227,11 @@ def tokenize(source, line_number: int = 1):
     The input can be either:
     - A string, which will be split into lines using `str.splitlines()`.
     - A callable that returns one line of text per call. Tokenization stops when the callable returns an empty string or `None`.
-    
+
     Args:
         source: A string to be tokenized or a callable returning lines of text.
         line_number: The initial line number to associate with the generated tokens.
-    
+
     Yields:
         Token objects as defined by the Mohito language specification.
     """
@@ -242,11 +239,11 @@ def tokenize(source, line_number: int = 1):
 
     if isinstance(source, str):
         lines = iter(source.splitlines() + [""])
+
         def source():
             return next(lines)
 
     i = line_number
-    while (line := source()):
+    while line := source():
         yield from zip(it.repeat(i), tokenizer(line))
         i += 1
-    

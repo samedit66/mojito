@@ -2,7 +2,7 @@ from mohito import tokenizer
 
 
 def main():
-    s = 'def inc { + 1 }'
+    s = "def inc { + 1 }"
     mt = tokenizer.mohito_tokenizer()
     print(list(mt(s)))
 
