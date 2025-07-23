@@ -2,6 +2,6 @@
 test:
 	uv run pytest -v
 
-.PHONY: mypy
-mypy:
-	uv run mypy src
+.PHONY: type
+type:
+	uv run pytype src

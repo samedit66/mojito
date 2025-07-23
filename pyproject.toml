@@ -8,8 +8,8 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "mypy>=1.17.0",
     "pre-commit>=4.2.0",
     "pytest>=8.4.1",
+    "pytype>=2024.10.11",
     "ruff>=0.12.4",
 ]
