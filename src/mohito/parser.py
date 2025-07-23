@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mohito import tokenizer as t
+import mohito.tokenizer as t
 from mohito import types
 
 
@@ -38,66 +38,94 @@ class Parser:
         self.builder = SequenceBuilder()
         self.left_brackets = []
 
-    def consume(self, token: t): ...
-
-
-def parse(code_line: str) -> types.Sequence:
-    builder = SequenceBuilder()
-    left_brackets = []
-
-    for line_number, token in t.tokenize(code_line):
-        match token:
+    def consume(self, token: types.TokenWithLineNumber):
+        match token.kind:
             case (
-                types.Token(kind=types.MohitoTokenKind.FLOAT_NUMBER)
-                | types.Token(kind=types.MohitoTokenKind.INTEGER_NUMBER)
+                types.MohitoTokenKind.FLOAT_NUMBER
+                | types.MohitoTokenKind.INTEGER_NUMBER
+                | types.MohitoTokenKind.STRING
+                | types.MohitoTokenKind.WORD
             ):
-                n = parse_number(token)
-                builder.append(n)
-            case types.Token(kind=types.MohitoTokenKind.STRING):
-                s = types.String(token.value)
-                builder.append(s)
-            case types.Token(kind=types.MohitoTokenKind.WORD):
-                w = types.Word(token.value)
-                builder.append(w)
-            case types.Token(kind=types.MohitoTokenKind.LEFT_SQUARE_BRACKET):
-                left_brackets.append(token)
-                builder.enter()
-            case types.Token(kind=types.MohitoTokenKind.RIGHT_SQUARE_BRACKET):
-                if not left_brackets:
+                term = convert_token_to_term(token)
+                self.builder.append(term)
+            case types.MohitoTokenKind.LEFT_SQUARE_BRACKET:
+                self.left_brackets.append(token)
+                self.builder.enter()
+            case types.MohitoTokenKind.RIGHT_SQUARE_BRACKET:
+                if not self.left_brackets:
                     raise MohitoSyntaxError(
-                        error_msg(
-                            line_number,
-                            token.start,
-                            token.end,
+                        error(
                             "unexpected quotation end",
+                            (token.line_number, token.start, token.end),
                         )
                     )
 
-                left_brackets.pop()
-                builder.leave()
-            case types.Token(kind=types.MohitoTokenKind.INVALID_STRING):
+                self.left_brackets.pop()
+                self.builder.leave()
+            case types.MohitoTokenKind.INVALID_STRING:
                 raise MohitoSyntaxError(
-                    error_msg(
-                        line_number, token.start, token.end, "invalid string literal"
+                    error(
+                        "invalid string literal",
+                        (token.line_number, token.start, token.end),
+                    )
+                )
+            case _:
+                raise MohitoSyntaxError(
+                    error(
+                        f"token '{token.value}' is not supported by parser",
+                        (token.line_number, token.start, token.end),
                     )
                 )
 
-    if left_brackets:
-        last = left_brackets.pop()
+    def ast(self) -> types.Sequence:
+        if self.left_brackets:
+            last = self.left_brackets.pop()
+            raise MohitoSyntaxError(
+                error(
+                    "quotation was not closed",
+                    (last.line_number, last.start, last.end),
+                )
+            )
+
+        return self.builder.sequence()
+
+
+def convert_token_to_term(token: types.TokenWithLineNumber):
+    loc = types.Location(
+        line_number=token.line_number,
+        start=token.start,
+        end=token.end,
+    )
+    match token.kind:
+        case types.MohitoTokenKind.FLOAT_NUMBER | types.MohitoTokenKind.INTEGER_NUMBER:
+            return types.Number(loc, float(token.value))
+        case types.MohitoTokenKind.STRING:
+            return types.String(loc, token.value)
+        case types.MohitoTokenKind.WORD:
+            return types.Word(loc, token.value)
+
+
+def parse(source) -> types.Sequence:
+    parser = Parser()
+
+    try:
+        for token in t.tokenize(source):
+            parser.consume(token)
+    except t.NoMatchingRuleFoundError as err:
         raise MohitoSyntaxError(
-            error_msg(line_number, last.start, last.end, "quotation was not closed")
-        )
+            error("parser is unable to continue: uncrecognozied character found")
+        ) from err
 
-    return builder.sequence()
-
-
-def parse_number(number_token: t.Token) -> types.Number:
-    n = float(number_token.value)
-    return types.Number(n)
+    return parser.ast()
 
 
-def error_msg(line_number, start, end, msg):
-    return f"\033[1m{location(line_number, start, end)}: \x1b[31merror: \x1b[0m{msg}"
+def error(msg, loc=None):
+    error_msg = f"\x1b[31merror: \x1b[0m{msg}"
+    if loc:
+        line_number, start, end = loc
+        loc_msg = f"\033[1m{location(line_number, start, end)}"
+        return f"{loc_msg}: {error_msg}"
+    return error_msg
 
 
 def location(line_number, start, end):

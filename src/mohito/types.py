@@ -82,7 +82,15 @@ class MohitoTokenKind(enum.Enum):
 
 
 @dataclasses.dataclass(frozen=True)
+class Location:
+    line_number: int
+    start: int
+    end: int
+
+
+@dataclasses.dataclass(frozen=True)
 class Number:
+    location: Location
     value: float
 
     def __eq__(self, other_number) -> bool:
@@ -93,11 +101,13 @@ class Number:
 
 @dataclasses.dataclass(frozen=True)
 class String:
+    location: Location
     value: str
 
 
 @dataclasses.dataclass(frozen=True)
 class Word:
+    location: Location
     name: str
 
     def __eq__(self, other_word) -> bool:
