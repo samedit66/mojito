@@ -24,6 +24,11 @@ class Token:
 
 
 @dataclasses.dataclass(frozen=True)
+class TokenWithLineNumber(Token):
+    line_number: int
+
+
+@dataclasses.dataclass(frozen=True)
 class TokenRule:
     """
     Defines a rule for matching tokens based on a regular expression.

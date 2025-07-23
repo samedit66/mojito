@@ -10,44 +10,6 @@ class NoMatchingRuleFoundError(Exception):
     Raised when no token rule matches the input at the current position.
     """
 
-    pass
-
-
-def simple_tokenize(
-    s: str,
-    rules: typing.Iterable[types.TokenRule],
-) -> typing.Iterator[types.Token]:
-    """
-    Tokenizes the input string by applying a sequence of TokenRule instances.
-
-    Args:
-        s: The string to tokenize.
-        rules: An iterable of TokenRule objects.
-
-    Yields:
-        Token instances for each match in the input string.
-
-    Raises:
-        NoMatchingRuleFoundError: If no rule matches at the current position.
-    """
-    rules_list = list(rules)
-    index = 0
-
-    while index < len(s):
-        matched = False
-        for rule in rules_list:
-            token = rule.try_match(s, start_index=index)
-            if token:
-                matched = True
-                index = token.end + 1
-                yield token
-                break
-
-        if not matched:
-            error_snippet = s[index : index + 3]
-            msg = f"No rule matched at index {index}: '{error_snippet}'"
-            raise NoMatchingRuleFoundError(msg)
-
 
 class RegexTokenizer:
     """
@@ -126,6 +88,42 @@ class RegexTokenizer:
                 yield token
 
 
+def simple_tokenize(
+    s: str,
+    rules: typing.Iterable[types.TokenRule],
+) -> typing.Iterator[types.Token]:
+    """
+    Tokenizes the input string by applying a sequence of TokenRule instances.
+
+    Args:
+        s: The string to tokenize.
+        rules: An iterable of TokenRule objects.
+
+    Yields:
+        Token instances for each match in the input string.
+
+    Raises:
+        NoMatchingRuleFoundError: If no rule matches at the current position.
+    """
+    rules_list = list(rules)
+    index = 0
+
+    while index < len(s):
+        matched = False
+        for rule in rules_list:
+            token = rule.try_match(s, start_index=index)
+            if token:
+                matched = True
+                index = token.end + 1
+                yield token
+                break
+
+        if not matched:
+            error_snippet = s[index : index + 3]
+            msg = f"No rule matched at index {index}: '{error_snippet}'"
+            raise NoMatchingRuleFoundError(msg)
+
+
 def mohito_tokenizer() -> RegexTokenizer:
     return (
         RegexTokenizer()
@@ -160,7 +158,7 @@ def tokenize(source, line_number: int = 1):
         line_number: The initial line number to associate with the generated tokens.
 
     Yields:
-        Token objects as defined by the Mohito language specification.
+        Token (`mohito.types.TokenWithLineNumber`) objects as defined by the Mohito language specification.
     """
     tokenizer = mohito_tokenizer()
 
@@ -172,5 +170,12 @@ def tokenize(source, line_number: int = 1):
 
     i = line_number
     while line := source():
-        yield from zip(it.repeat(i), tokenizer(line))
+        for line_number, token in zip(it.repeat(i), tokenizer(line)):
+            yield types.TokenWithLineNumber(
+                kind=token.kind,
+                line_number=line_number,
+                start=token.start,
+                end=token.end,
+                value=token.value,
+            )
         i += 1
