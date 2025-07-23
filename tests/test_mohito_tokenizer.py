@@ -18,7 +18,7 @@ def tokens(*tuples):
     return [make_token(*args) for args in tuples]
 
 
-def test_square_brackets(tokenizer):
+def test_square_brackets():
     s = "[ [] ]"
     expected = tokens(
         (types.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 1, 0, 0),
