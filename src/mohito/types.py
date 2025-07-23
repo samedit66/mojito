@@ -18,6 +18,11 @@ class MohitoTokenKind(enum.Enum):
 class Number:
     value: float
 
+    def __eq__(self, other_number) -> bool:
+        if isinstance(other_number, (int, float)):
+            return self.value == other_number
+        return self.value == other_number.value
+
 
 @dataclasses.dataclass(frozen=True)
 class String:
@@ -27,6 +32,11 @@ class String:
 @dataclasses.dataclass(frozen=True)
 class Word:
     name: str
+
+    def __eq__(self, other_word) -> bool:
+        if isinstance(other_word, str):
+            return self.name == other_word
+        return self.name == other_word.name
 
 
 @dataclasses.dataclass(frozen=True)
