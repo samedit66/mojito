@@ -117,8 +117,8 @@ class Word:
 
 
 @dataclasses.dataclass(frozen=True)
-class Sequence:
-    items: list[Number | String | Word] = dataclasses.field(default_factory=list)
+class Quotation:
+    items: list = dataclasses.field(default_factory=list)
 
     def __len__(self):
         return len(self.items)
@@ -130,9 +130,23 @@ class Sequence:
         return self.items[0]
 
     def tail(self):
-        return Sequence(self.items[1:])
+        return Quotation(self.items[1:])
 
     def append(self, element): ...
+
+    def __iter__(self):
+        return iter(self.items)
+
+
+@dataclasses.dataclass(frozen=True)
+class Program:
+    items: list = dataclasses.field(default_factory=list)
+
+    def __len__(self):
+        return len(self.items)
+
+    def __getitem__(self, index):
+        return self.items[index]
 
     def __iter__(self):
         return iter(self.items)

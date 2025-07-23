@@ -4,7 +4,7 @@ import mohito.tokenizer as t
 from mohito import types
 
 
-class SequenceBuilder:
+class ProgramBuilder:
     """
     Helper to form a `types.Sequence`.
     """
@@ -14,7 +14,7 @@ class SequenceBuilder:
         self.context = self.stack[-1]
 
     def sequence(self):
-        return types.Sequence(self.stack[-1])
+        return types.Program(self.stack[-1])
 
     def append(self, element):
         self.context.append(element)
@@ -24,7 +24,7 @@ class SequenceBuilder:
         self.context = self.stack[-1]
 
     def leave(self):
-        sub = types.Sequence(self.stack.pop())
+        sub = types.Quotation(self.stack.pop())
         self.stack[-1].append(sub)
         self.context = self.stack[-1]
 
@@ -35,7 +35,7 @@ class MohitoSyntaxError(Exception):
 
 class Parser:
     def __init__(self):
-        self.builder = SequenceBuilder()
+        self.builder = ProgramBuilder()
         self.left_brackets = []
 
     def consume(self, token: types.TokenWithLineNumber):

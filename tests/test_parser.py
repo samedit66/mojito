@@ -6,7 +6,7 @@ import mohito.types as types
 
 def test_parse_integer_number():
     seq = parser.parse("123")
-    assert isinstance(seq, types.Sequence)
+    assert isinstance(seq, types.Program)
     assert len(seq) == 1
     elem = seq[0]
     assert isinstance(elem, types.Number)
@@ -39,12 +39,12 @@ def test_parse_word():
 
 def test_parse_mixed_primitives():
     seq = parser.parse("42 foo 'ignored' [nested]")
-    assert isinstance(seq, types.Sequence)
+    assert isinstance(seq, types.Program)
     assert len(seq) == 4
     assert isinstance(seq[0], types.Number)
     assert isinstance(seq[1], types.Word)
     assert isinstance(seq[2], types.Word)
-    assert isinstance(seq[3], types.Sequence)
+    assert isinstance(seq[3], types.Quotation)
     assert isinstance(seq[3][0], types.Word)
 
 
@@ -53,7 +53,7 @@ def test_parse_simple_sequence():
     # One top-level Sequence containing three Numbers
     assert len(seq) == 1
     inner = seq[0]
-    assert isinstance(inner, types.Sequence)
+    assert isinstance(inner, types.Quotation)
     assert [n.value for n in inner] == [1.0, 2.0, 3.0]
 
 
@@ -61,9 +61,9 @@ def test_parse_nested_sequence():
     seq = parser.parse("[ a [ b c ] d ]")
     assert len(seq) == 1
     outer = seq[0]
-    assert isinstance(outer, types.Sequence)
+    assert isinstance(outer, types.Quotation)
     assert isinstance(outer[0], types.Word) and outer[0].name == "a"
-    assert isinstance(outer[1], types.Sequence)
+    assert isinstance(outer[1], types.Quotation)
     assert [w.name for w in outer[1]] == ["b", "c"]
     assert isinstance(outer[2], types.Word) and outer[2].name == "d"
 
