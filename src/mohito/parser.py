@@ -33,6 +33,14 @@ class MohitoSyntaxError(Exception):
     pass
 
 
+class Parser:
+    def __init__(self):
+        self.builder = SequenceBuilder()
+        self.left_brackets = []
+
+    def consume(self, token: t): ...
+
+
 def parse(code_line: str) -> types.Sequence:
     builder = SequenceBuilder()
     left_brackets = []
@@ -40,21 +48,21 @@ def parse(code_line: str) -> types.Sequence:
     for line_number, token in t.tokenize(code_line):
         match token:
             case (
-                t.Token(kind=types.MohitoTokenKind.FLOAT_NUMBER)
-                | t.Token(kind=types.MohitoTokenKind.INTEGER_NUMBER)
+                types.Token(kind=types.MohitoTokenKind.FLOAT_NUMBER)
+                | types.Token(kind=types.MohitoTokenKind.INTEGER_NUMBER)
             ):
                 n = parse_number(token)
                 builder.append(n)
-            case t.Token(kind=types.MohitoTokenKind.STRING):
+            case types.Token(kind=types.MohitoTokenKind.STRING):
                 s = types.String(token.value)
                 builder.append(s)
-            case t.Token(kind=types.MohitoTokenKind.WORD):
+            case types.Token(kind=types.MohitoTokenKind.WORD):
                 w = types.Word(token.value)
                 builder.append(w)
-            case t.Token(kind=types.MohitoTokenKind.LEFT_SQUARE_BRACKET):
+            case types.Token(kind=types.MohitoTokenKind.LEFT_SQUARE_BRACKET):
                 left_brackets.append(token)
                 builder.enter()
-            case t.Token(kind=types.MohitoTokenKind.RIGHT_SQUARE_BRACKET):
+            case types.Token(kind=types.MohitoTokenKind.RIGHT_SQUARE_BRACKET):
                 if not left_brackets:
                     raise MohitoSyntaxError(
                         error_msg(
@@ -67,7 +75,7 @@ def parse(code_line: str) -> types.Sequence:
 
                 left_brackets.pop()
                 builder.leave()
-            case t.Token(kind=types.MohitoTokenKind.INVALID_STRING):
+            case types.Token(kind=types.MohitoTokenKind.INVALID_STRING):
                 raise MohitoSyntaxError(
                     error_msg(
                         line_number, token.start, token.end, "invalid string literal"

@@ -1,4 +1,5 @@
 import pytest
+
 import mohito.parser as parser
 import mohito.types as types
 

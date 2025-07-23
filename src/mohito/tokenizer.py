@@ -1,70 +1,8 @@
 from __future__ import annotations
-import dataclasses
 import typing
 import itertools as it
-import re
 
 from mohito import types
-
-
-@dataclasses.dataclass(frozen=True)
-class Token:
-    """
-    Represents a token produced by the tokenizer.
-
-    Attributes:
-        kind: The type or category of the token.
-        value: The substring matched for this token.
-        start: The start index of the token in the input string.
-        end: The end index (inclusive) of the token in the input string.
-    """
-
-    kind: typing.Any
-    value: str
-    start: int
-    end: int
-
-
-@dataclasses.dataclass(frozen=True)
-class TokenRule:
-    """
-    Defines a rule for matching tokens based on a regular expression.
-
-    Attributes:
-        regex_rule: The regular expression pattern to apply.
-        kind: The type or category assigned to tokens matching this rule.
-    """
-
-    regex_rule: str
-    kind: typing.Any
-
-    def try_match(
-        self,
-        s: str,
-        *,
-        start_index: int = 0,
-    ) -> typing.Optional[Token]:
-        """
-        Attempts to match the rule against the input string at a given position.
-
-        Args:
-            s: The full input string.
-            start_index: The index in `s` at which to start matching.
-
-        Returns:
-            A Token if the pattern matches at `start_index`, otherwise None.
-        """
-        substring = s[start_index:]
-        match = re.match(self.regex_rule, substring)
-        if not match:
-            return None
-
-        return Token(
-            kind=self.kind,
-            value=match.group(),
-            start=match.start() + start_index,
-            end=match.end() + start_index - 1,
-        )
 
 
 class NoMatchingRuleFoundError(Exception):
@@ -77,8 +15,8 @@ class NoMatchingRuleFoundError(Exception):
 
 def simple_tokenize(
     s: str,
-    rules: typing.Iterable[TokenRule],
-) -> typing.Iterator[Token]:
+    rules: typing.Iterable[types.TokenRule],
+) -> typing.Iterator[types.Token]:
     """
     Tokenizes the input string by applying a sequence of TokenRule instances.
 
@@ -132,7 +70,7 @@ class RegexTokenizer:
         """
         Initializes the tokenizer with an empty rule set.
         """
-        self.__rules: typing.List[TokenRule] = []
+        self.__rules: typing.List[types.TokenRule] = []
 
     def add_token(
         self,
@@ -149,7 +87,7 @@ class RegexTokenizer:
         Returns:
             The RegexTokenizer instance (for method chaining).
         """
-        self.__rules.append(TokenRule(regex_rule, kind))
+        self.__rules.append(types.TokenRule(regex_rule, kind))
         return self
 
     def ignore(
@@ -170,7 +108,7 @@ class RegexTokenizer:
     def __call__(
         self,
         s: str,
-    ) -> typing.Iterator[Token]:
+    ) -> typing.Iterator[types.Token]:
         """
         Tokenizes the input text using the configured rules.
 
