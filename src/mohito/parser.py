@@ -13,7 +13,7 @@ class ProgramBuilder:
         self.stack = [[]]
         self.context = self.stack[-1]
 
-    def sequence(self):
+    def program(self):
         return types.Program(self.stack[-1])
 
     def append(self, element):
@@ -77,7 +77,7 @@ class Parser:
                     )
                 )
 
-    def ast(self) -> types.Sequence:
+    def ast(self) -> types.Program:
         if self.left_brackets:
             last = self.left_brackets.pop()
             raise MohitoSyntaxError(
@@ -87,7 +87,7 @@ class Parser:
                 )
             )
 
-        return self.builder.sequence()
+        return self.builder.program()
 
 
 def convert_token_to_term(token: types.TokenWithLineNumber):
@@ -105,7 +105,7 @@ def convert_token_to_term(token: types.TokenWithLineNumber):
             return types.Word(loc, token.value)
 
 
-def parse(source) -> types.Sequence:
+def parse(source) -> types.Program:
     parser = Parser()
 
     try:
