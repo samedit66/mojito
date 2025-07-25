@@ -1,7 +1,7 @@
 import pytest
 
-import mohito.tokenizer as t
-from mohito import types
+import mojito.tokenizer as t
+from mojito import types
 
 
 def test_numbers_and_words_tokenizer():

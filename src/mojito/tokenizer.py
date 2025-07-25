@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing
 import itertools as it
 
-from mohito import types
+from mojito import types
 
 
 class NoMatchingRuleFoundError(Exception):
@@ -124,30 +124,30 @@ def simple_tokenize(
             raise NoMatchingRuleFoundError(msg)
 
 
-def mohito_tokenizer() -> RegexTokenizer:
+def mojito_tokenizer() -> RegexTokenizer:
     return (
         RegexTokenizer()
         # Whitespace to ignore
         .ignore(r"\s+")
         .ignore(r"//.*\n?")
         # Valid string
-        .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', types.MohitoTokenKind.STRING)
+        .add_token(r'"([^"\n\\]|\\n|\\"|\\t|\\\\)*"', types.MojitoTokenKind.STRING)
         # Invalid string
-        .add_token(r'".*\n?$', types.MohitoTokenKind.INVALID_STRING)
+        .add_token(r'".*\n?$', types.MojitoTokenKind.INVALID_STRING)
         # Quotes
-        .add_token(r"\[", types.MohitoTokenKind.LEFT_SQUARE_BRACKET)
-        .add_token(r"\]", types.MohitoTokenKind.RIGHT_SQUARE_BRACKET)
+        .add_token(r"\[", types.MojitoTokenKind.LEFT_SQUARE_BRACKET)
+        .add_token(r"\]", types.MojitoTokenKind.RIGHT_SQUARE_BRACKET)
         # Numbers
-        .add_token(r"[\-+]?\d*\.\d+", types.MohitoTokenKind.FLOAT_NUMBER)
-        .add_token(r"[\-+]?\d+", types.MohitoTokenKind.INTEGER_NUMBER)
+        .add_token(r"[\-+]?\d*\.\d+", types.MojitoTokenKind.FLOAT_NUMBER)
+        .add_token(r"[\-+]?\d+", types.MojitoTokenKind.INTEGER_NUMBER)
         # Any other non-space identifier is a word
-        .add_token(r"[^\s\[\]\"]+", types.MohitoTokenKind.WORD)
+        .add_token(r"[^\s\[\]\"]+", types.MojitoTokenKind.WORD)
     )
 
 
 def tokenize(source, line_number: int = 1):
     """
-    Tokenizes the input using the Mohito tokenizer.
+    Tokenizes the input using the Mojito tokenizer.
 
     The input can be either:
     - A string, which will be split into lines using `str.splitlines()`.
@@ -158,9 +158,9 @@ def tokenize(source, line_number: int = 1):
         line_number: The initial line number to associate with the generated tokens.
 
     Yields:
-        Token (`mohito.types.TokenWithLineNumber`) objects as defined by the Mohito language specification.
+        Token (`mojito.types.TokenWithLineNumber`) objects as defined by the Mojito language specification.
     """
-    tokenizer = mohito_tokenizer()
+    tokenizer = mojito_tokenizer()
 
     if isinstance(source, str):
         lines = iter(source.splitlines() + [""])

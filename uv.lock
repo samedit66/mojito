@@ -237,7 +237,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mohito"
+name = "mojito"
 version = "0.1.0"
 source = { virtual = "." }
 

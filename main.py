@@ -1,5 +1,5 @@
-from mohito import executor
-from mohito import stdlib
+from mojito import executor
+from mojito import stdlib
 
 
 def repl():

@@ -1,4 +1,4 @@
-from mohito import executor
+from mojito import executor
 
 
 vocab = executor.Vocab(

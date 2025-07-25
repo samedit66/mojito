@@ -2,8 +2,8 @@ from __future__ import annotations
 import dataclasses
 import typing
 
-from mohito import types
-from mohito import parser
+from mojito import types
+from mojito import parser
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

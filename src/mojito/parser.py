@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import mohito.tokenizer as t
-from mohito import types
+import mojito.tokenizer as t
+from mojito import types
 
 
 class ProgramBuilder:
@@ -29,7 +29,7 @@ class ProgramBuilder:
         self.context = self.stack[-1]
 
 
-class MohitoSyntaxError(Exception):
+class MojitoSyntaxError(Exception):
     pass
 
 
@@ -41,19 +41,19 @@ class Parser:
     def consume(self, token: types.TokenWithLineNumber):
         match token.kind:
             case (
-                types.MohitoTokenKind.FLOAT_NUMBER
-                | types.MohitoTokenKind.INTEGER_NUMBER
-                | types.MohitoTokenKind.STRING
-                | types.MohitoTokenKind.WORD
+                types.MojitoTokenKind.FLOAT_NUMBER
+                | types.MojitoTokenKind.INTEGER_NUMBER
+                | types.MojitoTokenKind.STRING
+                | types.MojitoTokenKind.WORD
             ):
                 term = convert_token_to_term(token)
                 self.builder.append(term)
-            case types.MohitoTokenKind.LEFT_SQUARE_BRACKET:
+            case types.MojitoTokenKind.LEFT_SQUARE_BRACKET:
                 self.left_brackets.append(token)
                 self.builder.enter()
-            case types.MohitoTokenKind.RIGHT_SQUARE_BRACKET:
+            case types.MojitoTokenKind.RIGHT_SQUARE_BRACKET:
                 if not self.left_brackets:
-                    raise MohitoSyntaxError(
+                    raise MojitoSyntaxError(
                         error(
                             "unexpected quotation end",
                             (token.line_number, token.start, token.end),
@@ -62,15 +62,15 @@ class Parser:
 
                 self.left_brackets.pop()
                 self.builder.leave()
-            case types.MohitoTokenKind.INVALID_STRING:
-                raise MohitoSyntaxError(
+            case types.MojitoTokenKind.INVALID_STRING:
+                raise MojitoSyntaxError(
                     error(
                         "invalid string literal",
                         (token.line_number, token.start, token.end),
                     )
                 )
             case _:
-                raise MohitoSyntaxError(
+                raise MojitoSyntaxError(
                     error(
                         f"token '{token.value}' is not supported by parser",
                         (token.line_number, token.start, token.end),
@@ -80,7 +80,7 @@ class Parser:
     def ast(self) -> types.Program:
         if self.left_brackets:
             last = self.left_brackets.pop()
-            raise MohitoSyntaxError(
+            raise MojitoSyntaxError(
                 error(
                     "quotation was not closed",
                     (last.line_number, last.start, last.end),
@@ -97,11 +97,11 @@ def convert_token_to_term(token: types.TokenWithLineNumber):
         end=token.end,
     )
     match token.kind:
-        case types.MohitoTokenKind.FLOAT_NUMBER | types.MohitoTokenKind.INTEGER_NUMBER:
+        case types.MojitoTokenKind.FLOAT_NUMBER | types.MojitoTokenKind.INTEGER_NUMBER:
             return types.Number(loc, float(token.value))
-        case types.MohitoTokenKind.STRING:
+        case types.MojitoTokenKind.STRING:
             return types.String(loc, token.value)
-        case types.MohitoTokenKind.WORD:
+        case types.MojitoTokenKind.WORD:
             return types.Word(loc, token.value)
 
 
@@ -112,7 +112,7 @@ def parse(source) -> types.Program:
         for token in t.tokenize(source):
             parser.consume(token)
     except t.NoMatchingRuleFoundError as err:
-        raise MohitoSyntaxError(
+        raise MojitoSyntaxError(
             error("parser is unable to continue: uncrecognozied character found")
         ) from err
 

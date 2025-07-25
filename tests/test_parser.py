@@ -1,7 +1,7 @@
 import pytest
 
-import mohito.parser as parser
-import mohito.types as types
+import mojito.parser as parser
+import mojito.types as types
 
 
 def test_parse_integer_number():
@@ -69,15 +69,15 @@ def test_parse_nested_sequence():
 
 
 def test_unmatched_left_bracket_raises():
-    with pytest.raises(parser.MohitoSyntaxError, match=r"quotation was not closed"):
+    with pytest.raises(parser.MojitoSyntaxError, match=r"quotation was not closed"):
         parser.parse("[1 2 3")
 
 
 def test_unmatched_right_bracket_raises():
-    with pytest.raises(parser.MohitoSyntaxError, match=r"unexpected quotation end"):
+    with pytest.raises(parser.MojitoSyntaxError, match=r"unexpected quotation end"):
         parser.parse("1 2] 3")
 
 
 def test_invalid_string_literal_raises():
-    with pytest.raises(parser.MohitoSyntaxError, match=r"invalid string literal"):
+    with pytest.raises(parser.MojitoSyntaxError, match=r"invalid string literal"):
         parser.parse('"unterminated string')

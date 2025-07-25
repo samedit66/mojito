@@ -71,7 +71,7 @@ class TokenRule:
 
 
 @enum.unique
-class MohitoTokenKind(enum.Enum):
+class MojitoTokenKind(enum.Enum):
     LEFT_SQUARE_BRACKET = enum.auto()
     RIGHT_SQUARE_BRACKET = enum.auto()
     INTEGER_NUMBER = enum.auto()
