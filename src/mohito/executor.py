@@ -52,10 +52,10 @@ class InternalState:
     def push(self, element):
         self.data_stack.append(element)
 
-    def drop(self):
+    def pop(self):
         if not self.data_stack:
             raise RuntimeError("Stack underflow")
-        self.data_stack.pop()
+        return self.data_stack.pop()
 
     def dup(self):
         if not self.data_stack:
@@ -75,10 +75,11 @@ class Executor:
         self.state = InternalState([])
 
     def run(self, source):
-        ast = parser.parse(source)
-        return self.execute(ast, self.vocab)
+        ast = types.Quotation(parser.parse(source).items)
+        closure = Closure(ast, self.vocab)
+        return self.execute(closure)
 
-    def execute(self, words, vocab):
+    def execute(self, closure):
         def reader(ws):
             i = 0
 
@@ -92,19 +93,20 @@ class Executor:
 
             return aux
 
-        read_word = reader(words)
+        read_word = reader(closure.body.items)
         while word := read_word():
             match word:
                 case types.Number() | types.String():
                     self.state.push(word.value)
                 case types.Quotation():
-                    closure = Closure(word, vocab.child())
+                    closure = Closure(word, closure.vocab)
                     self.state.push(closure)
                 case types.Word(name=name):
-                    func = vocab.lookup(name)
+                    func = closure.vocab.lookup(name)
                     if not func:
                         raise RuntimeError(f"I don't know the word: {name}")
+
                     if isinstance(func, Closure):
-                        self.execute(func.body.items, func.vocab)
+                        self.execute(func)
                     else:
-                        func(self.state, vocab, read_word, self.execute)
+                        func(self.state, closure.vocab, read_word, self.execute)
