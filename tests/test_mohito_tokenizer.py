@@ -1,67 +1,125 @@
 import pytest
 
-from mohito import tokenizer
+import mojito.tokenizer as t
+from mojito import types
 
 
-@pytest.fixture
-def mohito_tok():
-    return tokenizer.mohito_tokenizer()
+def make_token(kind, value, line_number, start, end):
+    return types.TokenWithLineNumber(
+        kind=kind,
+        value=value,
+        line_number=line_number,
+        start=start,
+        end=end,
+    )
 
 
-def test_brackets_and_punctuation(mohito_tok):
-    s = "[]{},->"
+def tokens(*tuples):
+    return [make_token(*args) for args in tuples]
+
+
+def test_square_brackets():
+    s = "[ [] ]"
+    expected = tokens(
+        (types.MojitoTokenKind.LEFT_SQUARE_BRACKET, "[", 1, 0, 0),
+        (types.MojitoTokenKind.LEFT_SQUARE_BRACKET, "[", 1, 2, 2),
+        (types.MojitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 1, 3, 3),
+        (types.MojitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 1, 5, 5),
+    )
+
+    assert list(t.tokenize(s)) == expected
+
+
+@pytest.mark.parametrize(
+    "input_str, kind, literal",
+    [
+        ("123", types.MojitoTokenKind.INTEGER_NUMBER, "123"),
+        ("-42", types.MojitoTokenKind.INTEGER_NUMBER, "-42"),
+        ("3.14", types.MojitoTokenKind.FLOAT_NUMBER, "3.14"),
+        ("+.5", types.MojitoTokenKind.FLOAT_NUMBER, "+.5"),
+        ('"hello\\"world"', types.MojitoTokenKind.STRING, '"hello\\"world"'),
+        ("foo_bar", types.MojitoTokenKind.WORD, "foo_bar"),
+        ("answer?", types.MojitoTokenKind.WORD, "answer?"),
+        ("a..b", types.MojitoTokenKind.WORD, "a..b"),
+    ],
+)
+def test_valid_literals(input_str, kind, literal):
+    tokens = list(t.tokenize(input_str))
+
+    assert len(tokens) == 1
+    assert tokens[0] == make_token(kind, literal, 1, 0, len(literal) - 1)
+
+
+@pytest.mark.parametrize(
+    "input_str, literal",
+    [
+        ('"unterminated', '"unterminated'),
+        ('"bad\\', '"bad\\'),
+    ],
+)
+def test_invalid_string(input_str, literal):
+    tokens = list(t.tokenize(input_str))
+
+    assert len(tokens) == 1
+    assert tokens[0] == make_token(
+        types.MojitoTokenKind.INVALID_STRING, literal, 1, 0, len(literal) - 1
+    )
+
+
+def test_mixed_sequence():
+    s = "[ foo 123 4.56 bar!? 'baz']"
+    expected = tokens(
+        (types.MojitoTokenKind.LEFT_SQUARE_BRACKET, "[", 1, 0, 0),
+        (types.MojitoTokenKind.WORD, "foo", 1, 2, 4),
+        (types.MojitoTokenKind.INTEGER_NUMBER, "123", 1, 6, 8),
+        (types.MojitoTokenKind.FLOAT_NUMBER, "4.56", 1, 10, 13),
+        (types.MojitoTokenKind.WORD, "bar!?", 1, 15, 19),
+        (types.MojitoTokenKind.WORD, "'baz'", 1, 21, 25),
+        (types.MojitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 1, 26, 26),
+    )
+
+    assert list(t.tokenize(s)) == expected
+
+
+def test_comment():
+    s = "print // this is a comment, not a word sequence"
     expected = [
-        tokenizer.Token(tokenizer.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 0, 0),
-        tokenizer.Token(tokenizer.MohitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 1, 1),
-        tokenizer.Token(tokenizer.MohitoTokenKind.LEFT_CURLY_BRACKET, "{", 2, 2),
-        tokenizer.Token(tokenizer.MohitoTokenKind.RIGHT_CURLY_BRACKET, "}", 3, 3),
-        tokenizer.Token(tokenizer.MohitoTokenKind.COMMA, ",", 4, 4),
-        tokenizer.Token(tokenizer.MohitoTokenKind.ARROW, "->", 5, 6),
+        make_token(types.MojitoTokenKind.WORD, "print", 1, 0, 4),
     ]
-    result = list(mohito_tok(s))
-    assert result == expected
+
+    assert list(t.tokenize(s)) == expected
 
 
-@pytest.mark.parametrize("s,kind,value", [
-    ("123", tokenizer.MohitoTokenKind.INTEGER_NUMBER, "123"),
-    ("3.14",tokenizer.MohitoTokenKind.FLOAT_NUMBER, "3.14"),
-    ('"hello\\"world"', tokenizer.MohitoTokenKind.STRING, '"hello\\"world"'),
-    ("foo", tokenizer.MohitoTokenKind.WORD, "foo"),
-    ("prime?", tokenizer.MohitoTokenKind.WORD, "prime?"),
-    ("x'", tokenizer.MohitoTokenKind.WORD, "x'"),
-    ("change!", tokenizer.MohitoTokenKind.WORD, "change!"),
-])
-def test_valid_literals(s, kind, value, mohito_tok):
-    result = list(mohito_tok(s))
-    assert len(result) == 1
-    expected = tokenizer.Token(kind, value, 0, len(value) - 1)
-    assert result[0] == expected
+def source_helper(lines):
+    lines = iter(lines)
+    return lambda: next(lines, "")
 
 
-@pytest.mark.parametrize("s,kind,value", [
-    ("123a", tokenizer.MohitoTokenKind.INVALID_INTEGER_NUMBER, "123a"),
-    ("3.14.5", tokenizer.MohitoTokenKind.INVALID_FLOAT_NUMBER, "3.14.5"),
-    ("12.a", tokenizer.MohitoTokenKind.INVALID_FLOAT_NUMBER, "12.a"),
-    ('"abc', tokenizer.MohitoTokenKind.INVALID_STRING, '"abc'),
-])
-def test_invalid_literals(s, kind, value, mohito_tok):
-    result = list(mohito_tok(s))
-    assert len(result) == 1
-    expected = tokenizer.Token(kind, value, 0, len(value) - 1)
-    assert result[0] == expected
+def test_multiline_text_with_line_numbers():
+    source = source_helper([": two 1", "1 +", ";"])
+
+    expected = tokens(
+        (types.MojitoTokenKind.WORD, ":", 1, 0, 0),
+        (types.MojitoTokenKind.WORD, "two", 1, 2, 4),
+        (types.MojitoTokenKind.INTEGER_NUMBER, "1", 1, 6, 6),
+        (types.MojitoTokenKind.INTEGER_NUMBER, "1", 2, 0, 0),
+        (types.MojitoTokenKind.WORD, "+", 2, 2, 2),
+        (types.MojitoTokenKind.WORD, ";", 3, 0, 0),
+    )
+
+    assert list(t.tokenize(source, line_number=1)) == expected
 
 
-def test_sequence_mixed(mohito_tok):
-    s = " [ foo , 42 ->bar!? 'baz'] "
-    expected = [
-        tokenizer.Token(tokenizer.MohitoTokenKind.LEFT_SQUARE_BRACKET, "[", 1, 1),
-        tokenizer.Token(tokenizer.MohitoTokenKind.WORD, "foo", 3, 5),
-        tokenizer.Token(tokenizer.MohitoTokenKind.COMMA, ",", 7, 7),
-        tokenizer.Token(tokenizer.MohitoTokenKind.INTEGER_NUMBER, "42", 9, 10),
-        tokenizer.Token(tokenizer.MohitoTokenKind.ARROW, "->", 12, 13),
-        tokenizer.Token(tokenizer.MohitoTokenKind.WORD, "bar!?", 14, 18),
-        tokenizer.Token(tokenizer.MohitoTokenKind.WORD, "'baz'", 20, 24),
-        tokenizer.Token(tokenizer.MohitoTokenKind.RIGHT_SQUARE_BRACKET, "]", 25, 25),
-    ]
-    result = list(mohito_tok(s))
-    assert result == expected
+def test_multiline_text_is_string():
+    source = ": two 1\n1 +\n;"
+
+    expected = tokens(
+        (types.MojitoTokenKind.WORD, ":", 1, 0, 0),
+        (types.MojitoTokenKind.WORD, "two", 1, 2, 4),
+        (types.MojitoTokenKind.INTEGER_NUMBER, "1", 1, 6, 6),
+        (types.MojitoTokenKind.INTEGER_NUMBER, "1", 2, 0, 0),
+        (types.MojitoTokenKind.WORD, "+", 2, 2, 2),
+        (types.MojitoTokenKind.WORD, ";", 3, 0, 0),
+    )
+
+    assert list(t.tokenize(source, line_number=1)) == expected
