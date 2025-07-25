@@ -47,7 +47,7 @@ class Vocab:
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class InternalState:
-    data_stack: list[typing.Union[float, Closure]]
+    data_stack: list[typing.Union[types.Number, types.String, Closure]]
 
     def push(self, element):
         self.data_stack.append(element)
@@ -97,7 +97,7 @@ class Executor:
         while word := read_word():
             match word:
                 case types.Number() | types.String():
-                    self.state.push(word.value)
+                    self.state.push(word)
                 case types.Quotation():
                     closure = Closure(word, closure.vocab)
                     self.state.push(closure)
@@ -109,4 +109,4 @@ class Executor:
                     if isinstance(func, Closure):
                         self.execute(func)
                     else:
-                        func(self.state, closure.vocab, read_word, self.execute)
+                        func(word, self.state, closure.vocab, read_word, self.execute)
