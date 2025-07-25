@@ -1,9 +1,9 @@
 // Calculates a factorial of a number
 // Example:
-//   4 fact print
+//   4 fact .
 : fact
   dup 1 >
-  [dup 1 fact *]
+  [dup 1 - fact *]
   [drop 1]
   if
 ;
