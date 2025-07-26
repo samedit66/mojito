@@ -83,7 +83,7 @@ class InternalState:
 
                     outputs.append(str_value[:border])
                 case Closure():
-                    outputs.append("*closure*")
+                    outputs.append("quotation")
 
         return f"stack: < {' '.join(outputs)} >"
 
