@@ -31,6 +31,7 @@ def repl():
                 continue
             try:
                 ex.run(line)
+                print(ex.state)
             except Exception as e:
                 print(f"Error: {e}")
         except EOFError:

@@ -16,7 +16,7 @@ def dup(word, state, vocab, read_word, execute):
     except IndexError:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected a single element on top of the stack"
+            f"{loc}: '{word.name}' expected a single element on top of the stack"
         )
 
 
@@ -27,7 +27,7 @@ def drop(word, state, vocab, read_word, execute):
     except IndexError:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected a single element on top of the stack"
+            f"{loc}: '{word.name}' expected a single element on top of the stack"
         )
 
 
@@ -41,7 +41,7 @@ def dip(word, state, vocab, read_word, execute):
     except IndexError:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected a closure on top of the stack"
+            f"{loc}: '{word.name}' expected a closure on top of the stack"
         )
 
 
@@ -54,7 +54,7 @@ def swap(word, state, vocab, read_word, execute):
     except IndexError:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected 2 elements on top of the stack"
+            f"{loc}: '{word.name}' expected 2 elements on top of the stack"
         )
 
 
@@ -71,7 +71,7 @@ def _pop2_numbers(word, state):
     if not (isinstance(a, types.Number) and isinstance(b, types.Number)):
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected two numbers, got {type(a).__name__} and {type(b).__name__}"
+            f"{loc}: '{word.name}' expected two numbers, got {type(a).__name__} and {type(b).__name__}"
         )
     return a, b
 
@@ -133,16 +133,16 @@ def if_combinator(word, state, vocab, read_word, execute):
     except Exception:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected 3 elements on the stack (cond true-branch false-branch)"
+            f"{loc}: '{word.name}' expected 3 elements on the stack (cond true-branch false-branch)"
         )
     if not isinstance(false_branch, executor.Closure) or not isinstance(
         true_branch, executor.Closure
     ):
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected quotations for branches")
+        raise RuntimeError(f"{loc}: '{word.name}' expected quotations for branches")
     if not isinstance(cond, types.Number):
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected a number as condition")
+        raise RuntimeError(f"{loc}: '{word.name}' expected a number as condition")
     if cond.value:
         execute(true_branch)
     else:
@@ -158,11 +158,11 @@ def bi(word, state, vocab, read_word, execute):
     except Exception:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected 3 elements on the stack (x q1 q2)"
+            f"{loc}: '{word.name}' expected 3 elements on the stack (x q1 q2)"
         )
     if not isinstance(q1, executor.Closure) or not isinstance(q2, executor.Closure):
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected quotations for bi")
+        raise RuntimeError(f"{loc}: '{word.name}' expected quotations for bi")
     state.push(x)
     execute(q1)
     state.push(x)
@@ -177,16 +177,29 @@ def when(word, state, vocab, read_word, execute):
     except Exception:
         loc = word.location
         raise RuntimeError(
-            f"{loc}: '{word.value}' expected 2 elements on the stack (cond quotation)"
+            f"{loc}: '{word.name}' expected 2 elements on the stack (cond quotation)"
         )
     if not isinstance(q, executor.Closure):
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected a quotation for when")
+        raise RuntimeError(f"{loc}: '{word.name}' expected a quotation for when")
     if not isinstance(cond, types.Number):
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected a number as condition")
+        raise RuntimeError(f"{loc}: '{word.name}' expected a number as condition")
     if cond.value:
         execute(q)
+
+
+@vocab.builtin("apply")
+def apply(word, state, vocab, read_word, execute):
+    try:
+        q = state.pop()
+    except Exception:
+        loc = word.location
+        raise RuntimeError(
+            f"{loc}: '{word.name}' expected 1 element on the stack (quotation)"
+        )
+
+    execute(q)
 
 
 @vocab.builtin(":")
@@ -213,15 +226,24 @@ def define(word, state, vocab, read_word, execute):
 @vocab.builtin(".")
 def println(word, state, vocab, read_word, execute):
     try:
-        w = state.pop()
-        match w:
-            case types.Number() | types.String():
-                print(w.value)
-            case types.Closure():
-                print("<quotation>")
+        v = state.pop()
+        match v:
+            case types.String():
+                output = v.value
+            case types.Number():
+                str_value = str(v.value)
+                for i in reversed(range(len(str_value))):
+                    if str_value[i] != "0":
+                        break
+                if str_value[i] == ".":
+                    border = i
+                else:
+                    border = i + 1
+                output = str_value[:border]
+            case executor.Closure():
+                output = "quotation"
+        print(output)
 
     except IndexError:
         loc = word.location
-        raise RuntimeError(
-            f"{loc}: '{word.value}' expected a value on top of the stack"
-        )
+        raise RuntimeError(f"{loc}: '{word.name}' expected a value on top of the stack")

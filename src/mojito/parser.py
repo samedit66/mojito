@@ -100,7 +100,7 @@ def convert_token_to_term(token: types.TokenWithLineNumber):
         case types.MojitoTokenKind.FLOAT_NUMBER | types.MojitoTokenKind.INTEGER_NUMBER:
             return types.Number(loc, float(token.value))
         case types.MojitoTokenKind.STRING:
-            return types.String(loc, token.value)
+            return types.String(loc, token.value[1:-1])
         case types.MojitoTokenKind.WORD:
             return types.Word(loc, token.value)
 

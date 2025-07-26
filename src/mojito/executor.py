@@ -62,6 +62,31 @@ class InternalState:
             raise RuntimeError("Stack underflow")
         self.data_stack.append(self.data_stack[-1])
 
+    def __repr__(self):
+        outputs = []
+
+        for v in self.data_stack:
+            match v:
+                case types.String():
+                    outputs.append(f'"{v.value}"')
+                case types.Number():
+                    str_value = str(v.value)
+
+                    for i in reversed(range(len(str_value))):
+                        if str_value[i] != "0":
+                            break
+
+                    if str_value[i] == ".":
+                        border = i
+                    else:
+                        border = i + 1
+
+                    outputs.append(str_value[:border])
+                case Closure():
+                    outputs.append("quotation")
+
+        return f"stack: < {' '.join(outputs)} >"
+
 
 @dataclasses.dataclass(frozen=True, slots=True)
 class Closure:

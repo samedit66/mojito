@@ -150,7 +150,8 @@ You'll need to have [uv](https://github.com/astral-sh/uv) installed, then:
 ```bash
 git clone https://github.com/samedit66/mojito
 cd mojito
-uv run main.py
+uv pip install -e .
+uv run mojito
 ```
 
 This will launch the mojito REPL. Try out a few simple stack experiments:
@@ -158,14 +159,14 @@ This will launch the mojito REPL. Try out a few simple stack experiments:
 ```bash
 mojito REPL. Type 'exit' or Ctrl-D to quit.
 >>> 2 3 + .
-5.0
+5
 >>> 10 dup * .          // compute 10²
-100.0
+100
 >>> [ 1 2 + ] apply .   // run the quotation on the top-of-stack
-3.0
+3
 >>> : square dup * ;    // define a square function
 >>> 7 square .
-49.0
+49
 >>> exit
 Bye!
 ```
