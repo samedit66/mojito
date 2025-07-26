@@ -62,7 +62,7 @@ print(fact(4))  # ⇒ 24
 (println (fact 4))  ; ⇒ 24
 ```
 
-### mohito (Concatenative Functional)
+### mojito (Concatenative Functional)
 
 ```js
 : fact
@@ -75,7 +75,7 @@ print(fact(4))  # ⇒ 24
 4 fact .  // ⇒ 24.0
 ```
 
-mohito may look at first glance like inscrutable ciphertext—rows of stack manipulations and bracketed quotations that could double as an ancient codebook—but beneath its “encrypted” surface lies a remarkably powerful and expressive core. Let's break it down.
+mojito may look at first glance like inscrutable ciphertext—rows of stack manipulations and bracketed quotations that could double as an ancient codebook—but beneath its “encrypted” surface lies a remarkably powerful and expressive core. Let's break it down.
 
 Firstly, the `:` word (we call functions “words”) tells the mojito interpreter to start “compiling” a new definition—yes, that’s the extent of mojito’s syntax! Next comes the word name, fact in our case.
 
@@ -93,11 +93,11 @@ Firstly, the `:` word (we call functions “words”) tells the mojito interpret
 
     - If n > 1, it pushes a truthy flag (e.g. `1`); otherwise, a falsy flag (e.g. `0`). __I promise I add booleans some day__.
 
-3. `[ dup 1 - fact * ]`
+3. `[dup 1 - fact *]`
 
     A quotation: an anonymous code block that
 
-    - dup: copies n again
+    - `dup`: copies `n` again
 
     - `1 -`: decrements it (`n - 1`)
 
@@ -107,7 +107,7 @@ Firstly, the `:` word (we call functions “words”) tells the mojito interpret
 
     This block embodies the "recursive case."
 
-4. `[ drop 1 ]`
+4. `[drop 1]`
 
     The “base case” quotation.
 
@@ -149,14 +149,13 @@ You'll need to have [uv](https://github.com/astral-sh/uv) installed, then:
 
 ```bash
 git clone https://github.com/samedit66/mojito
-cd mohito
+cd mojito
 uv run main.py
 ```
 
 This will launch the mojito REPL. Try out a few simple stack experiments:
 
 ```bash
-$ uv run main.py
 mojito REPL. Type 'exit' or Ctrl-D to quit.
 >>> 2 3 + .
 5.0
