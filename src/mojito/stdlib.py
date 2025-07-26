@@ -189,6 +189,19 @@ def when(word, state, vocab, read_word, execute):
         execute(q)
 
 
+@vocab.builtin("apply")
+def apply(word, state, vocab, read_word, execute):
+    try:
+        q = state.pop()
+    except Exception:
+        loc = word.location
+        raise RuntimeError(
+            f"{loc}: '{word.name}' expected 1 element on the stack (quotation)"
+        )
+
+    execute(q)
+
+
 @vocab.builtin(":")
 def define(word, state, vocab, read_word, execute):
     # Read the function name (should be a Word)
