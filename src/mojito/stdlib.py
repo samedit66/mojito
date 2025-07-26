@@ -210,15 +210,15 @@ def define(word, state, vocab, read_word, execute):
     vocab.define_word(func_name.name, closure)
 
 
-@vocab.builtin("say")
-def say(word, state, vocab, read_word, execute):
+@vocab.builtin(".")
+def println(word, state, vocab, read_word, execute):
     try:
         w = state.pop()
         match w:
             case types.Number() | types.String():
                 print(w.value)
             case types.Closure():
-                print("<closure>")
+                print("<quotation>")
 
     except IndexError:
         loc = word.location

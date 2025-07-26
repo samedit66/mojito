@@ -27,6 +27,9 @@ dev = [
     "ruff>=0.12.4",
 ]
 
+[project.scripts]
+mojito = "mojito.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/samedit66/mojito"
 Issues = "https://github.com/samedit66/mojito/issues"
