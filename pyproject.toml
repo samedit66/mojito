@@ -1,9 +1,22 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
 [project]
 name = "mojito"
 version = "0.1.0"
-description = "Add your description here"
+authors = [
+    { name="Dmitry Molcahnov (samedit66)", email="samedit66@yandex.ru" }
+]
+description = "A minimalist concatenative language in pure Python"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
 dependencies = []
 
 [dependency-groups]
@@ -13,3 +26,7 @@ dev = [
     "pytype>=2024.10.11",
     "ruff>=0.12.4",
 ]
+
+[project.urls]
+Homepage = "https://github.com/samedit66/mojito"
+Issues = "https://github.com/samedit66/mojito/issues"
