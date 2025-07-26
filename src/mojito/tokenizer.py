@@ -163,7 +163,7 @@ def tokenize(source, line_number: int = 1):
     tokenizer = mojito_tokenizer()
 
     if isinstance(source, str):
-        lines = iter(source.splitlines() + [""])
+        lines = iter([line for line in source.splitlines() if line] + [""])
 
         def source():
             return next(lines)
