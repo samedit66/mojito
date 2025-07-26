@@ -4,7 +4,7 @@ from mojito import stdlib
 
 def repl():
     ex = executor.Executor(stdlib.vocab)
-    print("Mojito REPL. Type 'exit' or Ctrl-D to quit.")
+    print("mojito REPL. Type 'exit' or Ctrl-D to quit.")
     while True:
         try:
             line = input(">>> ")
