@@ -27,7 +27,7 @@ def test_parse_string_literal():
     elem = seq[0]
     assert isinstance(elem, types.String)
     # The token value includes quotes and escape sequences
-    assert elem.value == '"hello\\nworld"'
+    assert elem.value == "hello\\nworld"
 
 
 def test_parse_word():

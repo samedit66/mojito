@@ -1,8 +1,7 @@
-from mojito import executor
 from mojito import types
 
 
-vocab = executor.Vocab(
+vocab = types.Vocab(
     parent_vocab=None,
     builtins={},
     user_defined={},
@@ -67,7 +66,7 @@ def _pop2_numbers(word, state):
         a = state.pop()
     except Exception:
         loc = word.location
-        raise RuntimeError(f"{loc}: '{word.value}' expected 2 elements on the stack")
+        raise RuntimeError(f"{loc}: '{word.name}' expected 2 elements on the stack")
     if not (isinstance(a, types.Number) and isinstance(b, types.Number)):
         loc = word.location
         raise RuntimeError(
@@ -111,7 +110,7 @@ def div(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     if b.value == 0:
         loc = word.location
-        raise RuntimeError(f"{loc}: Division by zero in '{word.value}'")
+        raise RuntimeError(f"{loc}: Division by zero in '{word.name}'")
     state.push(types.Number(word.location, a.value / b.value))
 
 
@@ -120,7 +119,7 @@ def mod(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     if b.value == 0:
         loc = word.location
-        raise RuntimeError(f"{loc}: Modulo by zero in '{word.value}'")
+        raise RuntimeError(f"{loc}: Modulo by zero in '{word.name}'")
     state.push(types.Number(word.location, a.value % b.value))
 
 
@@ -135,8 +134,8 @@ def if_combinator(word, state, vocab, read_word, execute):
         raise RuntimeError(
             f"{loc}: '{word.name}' expected 3 elements on the stack (cond true-branch false-branch)"
         )
-    if not isinstance(false_branch, executor.Closure) or not isinstance(
-        true_branch, executor.Closure
+    if not isinstance(false_branch, types.Closure) or not isinstance(
+        true_branch, types.Closure
     ):
         loc = word.location
         raise RuntimeError(f"{loc}: '{word.name}' expected quotations for branches")
@@ -160,7 +159,7 @@ def bi(word, state, vocab, read_word, execute):
         raise RuntimeError(
             f"{loc}: '{word.name}' expected 3 elements on the stack (x q1 q2)"
         )
-    if not isinstance(q1, executor.Closure) or not isinstance(q2, executor.Closure):
+    if not isinstance(q1, types.Closure) or not isinstance(q2, types.Closure):
         loc = word.location
         raise RuntimeError(f"{loc}: '{word.name}' expected quotations for bi")
     state.push(x)
@@ -179,7 +178,7 @@ def when(word, state, vocab, read_word, execute):
         raise RuntimeError(
             f"{loc}: '{word.name}' expected 2 elements on the stack (cond quotation)"
         )
-    if not isinstance(q, executor.Closure):
+    if not isinstance(q, types.Closure):
         loc = word.location
         raise RuntimeError(f"{loc}: '{word.name}' expected a quotation for when")
     if not isinstance(cond, types.Number):
@@ -219,7 +218,7 @@ def define(word, state, vocab, read_word, execute):
         if hasattr(w, "name") and w.name == ";":
             break
         body.append(w)
-    closure = executor.Closure(types.Quotation(body), vocab.child())
+    closure = types.Closure(types.Quotation(body), vocab.child())
     vocab.define_word(func_name.name, closure)
 
 
@@ -240,7 +239,7 @@ def println(word, state, vocab, read_word, execute):
                 else:
                     border = i + 1
                 output = str_value[:border]
-            case executor.Closure():
+            case types.Closure():
                 output = "quotation"
         print(output)
 
