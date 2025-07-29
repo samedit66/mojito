@@ -12,8 +12,8 @@ def as_string(literal) -> str:
             return f'"{value}"'
         case types.Number(value=num_literal):
             return num_as_string(num_literal)
-        case types.Closure:
-            return "quotation"
+        case types.Closure() as quot:
+            return quot_as_string(quot)
 
 
 def num_as_string(num_literal: float) -> str:
@@ -26,11 +26,22 @@ def num_as_string(num_literal: float) -> str:
     return str_value
 
 
+def quot_as_string(quot_literal) -> str:
+    return "[...]"
+
+
 class Stack:
     __slots__ = ("data",)
 
     def __init__(self):
         self.data = []
+
+    def peek(self, at: int = 0):
+        # Note about `at`:
+        # at=0 -- we take the top of stack
+        # at=1 -- we take the second element
+        # and so on...
+        return self.data[-(at + 1)]
 
     def push(self, v):
         self.data.append(v)
@@ -39,7 +50,16 @@ class Stack:
         return self.data.pop()
 
     def dup(self):
-        self.data.append(self.data[-1])
+        self.push(self.peek())
+
+    def swap(self):
+        a = self.pop()
+        b = self.pop()
+        self.push(b)
+        self.push(a)
+
+    def depth(self) -> int:
+        return len(self.data)
 
     def __repr__(self):
         outputs = [as_string(v) for v in self.data]
