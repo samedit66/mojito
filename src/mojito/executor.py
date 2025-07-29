@@ -5,7 +5,7 @@ from mojito import parser
 class Executor:
     def __init__(self, vocab: types.Vocab):
         self.vocab = vocab
-        self.state = types.InternalState([])
+        self.stack = types.Stack()
 
     def run(self, source):
         ast = types.Quotation(parser.parse(source).items)
@@ -30,10 +30,10 @@ class Executor:
         while word := read_word():
             match word:
                 case types.Number() | types.String():
-                    self.state.push(word)
+                    self.stack.push(word)
                 case types.Quotation():
                     closure = types.Closure(word, closure.vocab)
-                    self.state.push(closure)
+                    self.stack.push(closure)
                 case types.Word(name=name):
                     func = closure.vocab.lookup(name)
                     if not func:
@@ -42,4 +42,4 @@ class Executor:
                     if isinstance(func, types.Closure):
                         self.execute(func)
                     else:
-                        func(word, self.state, closure.vocab, read_word, self.execute)
+                        func(word, self.stack, closure.vocab, read_word, self.execute)

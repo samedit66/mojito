@@ -8,7 +8,7 @@ vocab = types.Vocab(
 )
 
 
-@vocab.builtin("dup")
+@vocab.define("dup")
 def dup(word, state, vocab, read_word, execute):
     try:
         state.dup()
@@ -19,7 +19,7 @@ def dup(word, state, vocab, read_word, execute):
         )
 
 
-@vocab.builtin("drop")
+@vocab.define("drop")
 def drop(word, state, vocab, read_word, execute):
     try:
         state.pop()
@@ -30,7 +30,7 @@ def drop(word, state, vocab, read_word, execute):
         )
 
 
-@vocab.builtin("dip")
+@vocab.define("dip")
 def dip(word, state, vocab, read_word, execute):
     try:
         quotation = state.pop()
@@ -44,7 +44,7 @@ def dip(word, state, vocab, read_word, execute):
         )
 
 
-@vocab.builtin("swap")
+@vocab.define("swap")
 def swap(word, state, vocab, read_word, execute):
     try:
         a, b = state.pop(), state.pop()
@@ -75,37 +75,37 @@ def _pop2_numbers(word, state):
     return a, b
 
 
-@vocab.builtin("<")
+@vocab.define("<")
 def lt(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     state.push(types.Number(word.location, float(a.value < b.value)))
 
 
-@vocab.builtin(">")
+@vocab.define(">")
 def gt(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     state.push(types.Number(word.location, float(a.value > b.value)))
 
 
-@vocab.builtin("+")
+@vocab.define("+")
 def add(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     state.push(types.Number(word.location, a.value + b.value))
 
 
-@vocab.builtin("-")
+@vocab.define("-")
 def sub(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     state.push(types.Number(word.location, a.value - b.value))
 
 
-@vocab.builtin("*")
+@vocab.define("*")
 def mul(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     state.push(types.Number(word.location, a.value * b.value))
 
 
-@vocab.builtin("/")
+@vocab.define("/")
 def div(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     if b.value == 0:
@@ -114,7 +114,7 @@ def div(word, state, vocab, read_word, execute):
     state.push(types.Number(word.location, a.value / b.value))
 
 
-@vocab.builtin("mod")
+@vocab.define("mod")
 def mod(word, state, vocab, read_word, execute):
     a, b = _pop2_numbers(word, state)
     if b.value == 0:
@@ -123,7 +123,7 @@ def mod(word, state, vocab, read_word, execute):
     state.push(types.Number(word.location, a.value % b.value))
 
 
-@vocab.builtin("if")
+@vocab.define("if")
 def if_combinator(word, state, vocab, read_word, execute):
     try:
         false_branch = state.pop()
@@ -148,7 +148,7 @@ def if_combinator(word, state, vocab, read_word, execute):
         execute(false_branch)
 
 
-@vocab.builtin("bi")
+@vocab.define("bi")
 def bi(word, state, vocab, read_word, execute):
     try:
         q2 = state.pop()
@@ -168,7 +168,7 @@ def bi(word, state, vocab, read_word, execute):
     execute(q2)
 
 
-@vocab.builtin("when")
+@vocab.define("when")
 def when(word, state, vocab, read_word, execute):
     try:
         q = state.pop()
@@ -188,7 +188,7 @@ def when(word, state, vocab, read_word, execute):
         execute(q)
 
 
-@vocab.builtin("apply")
+@vocab.define("apply")
 def apply(word, state, vocab, read_word, execute):
     try:
         q = state.pop()
@@ -201,7 +201,7 @@ def apply(word, state, vocab, read_word, execute):
     execute(q)
 
 
-@vocab.builtin(":")
+@vocab.define(":")
 def define(word, state, vocab, read_word, execute):
     # Read the function name (should be a Word)
     func_name = read_word()
@@ -222,7 +222,7 @@ def define(word, state, vocab, read_word, execute):
     vocab.define_word(func_name.name, closure)
 
 
-@vocab.builtin(".")
+@vocab.define(".")
 def println(word, state, vocab, read_word, execute):
     try:
         v = state.pop()

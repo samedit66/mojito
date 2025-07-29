@@ -1,63 +1,81 @@
 from __future__ import annotations
 import dataclasses
-import typing
+import functools
+import re
 
 from mojito import types
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
-class InternalState:
-    data_stack: list[typing.Union[types.Number, types.String, Closure]]
+def as_string(literal) -> str:
+    match literal:
+        case types.String(value=value):
+            return f'"{value}"'
+        case types.Number(value=num_literal):
+            return num_as_string(num_literal)
+        case types.Closure:
+            return "quotation"
 
-    def push(self, element):
-        self.data_stack.append(element)
+
+def num_as_string(num_literal: float) -> str:
+    str_value = str(num_literal)
+
+    match = re.match(r"^(\d+)\.[1-9]*0+$", str_value)
+    if match:
+        return match.group(1)
+
+    return str_value
+
+
+class Stack:
+    __slots__ = ("data",)
+
+    def __init__(self):
+        self.data = []
+
+    def push(self, v):
+        self.data.append(v)
 
     def pop(self):
-        if not self.data_stack:
-            raise RuntimeError("Stack underflow")
-        return self.data_stack.pop()
+        return self.data.pop()
 
     def dup(self):
-        if not self.data_stack:
-            raise RuntimeError("Stack underflow")
-        self.data_stack.append(self.data_stack[-1])
+        self.data.append(self.data[-1])
 
     def __repr__(self):
-        outputs = []
-
-        for v in self.data_stack:
-            match v:
-                case types.String():
-                    outputs.append(f'"{v.value}"')
-                case types.Number():
-                    str_value = str(v.value)
-
-                    for i in reversed(range(len(str_value))):
-                        if str_value[i] != "0":
-                            break
-
-                    if str_value[i] == ".":
-                        border = i
-                    else:
-                        border = i + 1
-
-                    outputs.append(str_value[:border])
-                case Closure():
-                    outputs.append("quotation")
-
+        outputs = [as_string(v) for v in self.data]
         return f"stack: < {' '.join(outputs)} >"
 
 
-@dataclasses.dataclass(frozen=True, slots=True)
 class Vocab:
-    parent_vocab: typing.Optional[Vocab]
-    builtins: dict[str, typing.Callable[[InternalState, Vocab], None]]
-    user_defined: dict[str, Closure]
+    __slots__ = (
+        "parent_vocab",
+        "builtins",
+        "user_defined",
+    )
+
+    def __init__(
+        self,
+        parent_vocab=None,
+        builtins=None,
+        user_defined=None,
+    ):
+        self.parent_vocab = parent_vocab
+        self.builtins = builtins or {}
+        self.user_defined = user_defined or {}
 
     def is_builtin(self, name: str) -> bool:
         return name in self.builtins
 
-    def builtin(self, name: str):
+    def define(self, name: str, func=None):
+        if callable(func):
+            self.builtins[name] = func
+            return
+
+        if isinstance(func, types.Closure):
+            self.user_defined[name] = func
+            return
+
+        @functools.wraps(func)
         def decorator(func):
             self.builtins[name] = func
             return func
@@ -76,15 +94,12 @@ class Vocab:
         # 3. Check builtins
         return self.builtins.get(name)
 
-    def child(self):
+    def offspring(self):
         return Vocab(
             parent_vocab=self,
             builtins=self.builtins,
             user_defined={},
         )
-
-    def define_word(self, word_name, closure):
-        self.user_defined[word_name] = closure
 
 
 @dataclasses.dataclass(frozen=True, slots=True)

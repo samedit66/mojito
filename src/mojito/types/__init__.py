@@ -14,7 +14,7 @@ from .ast import (
 )
 from .runtime import (
     Vocab,
-    InternalState,
+    Stack,
     Closure,
 )
 
@@ -31,6 +31,6 @@ __all__ = [
     "Quotation",
     "Program",
     "Vocab",
-    "InternalState",
+    "Stack",
     "Closure",
 ]
