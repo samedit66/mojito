@@ -1,6 +1,5 @@
 from __future__ import annotations
 import dataclasses
-import functools
 import re
 
 from mojito import types
@@ -95,7 +94,6 @@ class Vocab:
             self.user_defined[name] = func
             return
 
-        @functools.wraps(func)
         def decorator(func):
             self.builtins[name] = func
             return func
