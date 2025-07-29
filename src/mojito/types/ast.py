@@ -13,6 +13,24 @@ class Number:
     location: Location
     value: float
 
+    def __add__(self, other):
+        return Number(self.value + other.value)
+
+    def __sub__(self, other):
+        return Number(self.value - other.value)
+
+    def __mul__(self, other):
+        return Number(self.value * other.value)
+
+    def __truediv__(self, other):
+        return Number(self.value / other.value)
+
+    def __mod__(self, other):
+        return Number(self.value % other.value)
+
+    def __floordiv__(self, other):
+        return Number(self.value // other.value)
+
 
 @dataclasses.dataclass(frozen=True)
 class String:
