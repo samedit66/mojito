@@ -1,4 +1,5 @@
 from mojito import types
+from mojito.types import runtime
 
 
 vocab = types.Vocab(
@@ -205,43 +206,37 @@ def apply(word, state, vocab, read_word, execute):
 def define(word, state, vocab, read_word, execute):
     # Read the function name (should be a Word)
     func_name = read_word()
-    if func_name is None or not hasattr(func_name, "name"):
+    if func_name is None or not isinstance(func_name, types.Word):
         loc = word.location
         raise RuntimeError(f"{loc}: ':' expected a word for function name")
     # Read body until ';'
     body = []
+    level = 0
     while True:
         w = read_word()
         if w is None:
             loc = word.location
             raise RuntimeError(f"{loc}: ':' expected ';' to end definition")
-        if hasattr(w, "name") and w.name == ";":
-            break
+
+        # The following allows us to define local functions -- no Forth supported that
+        if isinstance(w, types.Word):
+            if w.name == ":":
+                level += 1
+            elif w.name == ";":
+                if level == 0:
+                    break
+                level -= 1
+
         body.append(w)
-    closure = types.Closure(types.Quotation(body), vocab.child())
-    vocab.define_word(func_name.name, closure)
+    closure = types.Closure(types.Quotation(body), vocab.offspring())
+    vocab.define(func_name.name, closure)
 
 
+@vocab.define("put")
 @vocab.define(".")
 def println(word, state, vocab, read_word, execute):
     try:
-        v = state.pop()
-        match v:
-            case types.String():
-                output = v.value
-            case types.Number():
-                str_value = str(v.value)
-                for i in reversed(range(len(str_value))):
-                    if str_value[i] != "0":
-                        break
-                if str_value[i] == ".":
-                    border = i
-                else:
-                    border = i + 1
-                output = str_value[:border]
-            case types.Closure():
-                output = "quotation"
-        print(output)
+        print(runtime.as_string(state.pop()))
 
     except IndexError:
         loc = word.location
