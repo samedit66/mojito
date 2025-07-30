@@ -241,3 +241,9 @@ def println(word, state, vocab, read_word, execute):
     except IndexError:
         loc = word.location
         raise RuntimeError(f"{loc}: '{word.name}' expected a value on top of the stack")
+
+
+@vocab.define("get")
+def get(word, state, vocab, read_word, execute):
+    input_text = input()
+    state.push(types.String(word.location, input_text))
